@@ -6,7 +6,7 @@ authors = [
     {name = "nahid Qaderi",email = "nahid.ghaderee@gmail.com"}
 ]
 readme = "README.md"
-requires-python = ">=3.14"
+requires-python = ">=3.11,<4.0"
 dependencies = [
     "fastapi (>=0.135.1,<0.136.0)",
     "uvicorn[standard] (>=0.41.0,<0.42.0)",
@@ -24,3 +24,9 @@ dependencies = [
 [build-system]
 requires = ["poetry-core>=2.0.0,<3.0.0"]
 build-backend = "poetry.core.masonry.api"
+
+[dependency-groups]
+dev = [
+    "pytest (>=9.0.3,<10.0.0)",
+    "httpx (>=0.28.1,<0.29.0)"
+]

@@ -1,0 +1,53 @@
+services:
+  expense_db:
+    image: postgres:16
+    container_name: expense_db
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: 8911
+      POSTGRES_DB: expense_db
+    ports:
+      - "8911:5432"
+    volumes:
+      - expense_db_data:/var/lib/postgresql/data
+
+  users_db:
+    image: postgres:16
+    container_name: users_db
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: 8911
+      POSTGRES_DB: users_db
+    ports:
+      - "8912:5432"
+    volumes:
+      - users_db_data:/var/lib/postgresql/data
+
+  expense_service:
+    build:
+      context: .
+      dockerfile: backend/expense_service/Dockerfile
+    container_name: expense_service
+    ports:
+      - "8001:8001"
+    environment:
+      EXPENSE_DATABASE_URL: postgresql+psycopg2://postgres:8911@expense_db:5432/expense_db
+    depends_on:
+      - expense_db
+
+  auth_service:
+    build:
+      context: .
+      dockerfile: backend/auth_service/Dockerfile
+    ports:
+      - "8000:8000"
+    container_name: auth_service
+    environment:
+      USER_DATABASE_URL: postgresql+psycopg2://postgres:8911@users_db:5432/users_db
+    depends_on:
+        - users_db
+
+
+volumes:
+  expense_db_data:
+  users_db_data:
