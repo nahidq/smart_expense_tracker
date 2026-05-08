@@ -57,14 +57,13 @@ class ExpenseRepository:
 
         expense = db.query(Expense).filter(
             Expense.id == expense_id,
-            Expense.user_id == user_id
-        ).first()
+                    Expense.user_id == user_id
+                 ).first()
         if not expense:
             return False
         try:
             db.delete(expense)
             db.commit()
-
             return True
         except:
             db.rollback()
