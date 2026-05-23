@@ -1,0 +1,49 @@
+name: CI
+on:
+  push:
+   branches:
+     - main
+  pull_request:
+     branches:
+       - main
+jobs:
+  backend-tests:
+    name: Test ${{ matrix.service }}
+    runs-on: ubuntu-latest
+    container:
+     image: python:3.11
+    strategy:
+      matrix:
+        include:
+          - service: auth-service
+            test_path: backend/auth_service/tests
+          - service: expense-service
+            test_path: backend/expense_service/tests
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+      - name: Install dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install poetry
+          poetry install --no-root --no-interaction --no-ansi
+      - name: Run service tests
+        run: |
+          poetry run pytest ${{ matrix.test_path }}
+  frontend-checks:
+    runs-on: ubuntu-latest
+    container:
+      image: node:20
+    defaults:
+      run:
+        working-directory: frontend
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+      - name: Install dependencies
+        run: npm ci
+      - name: Lint
+        run: npm run lint
+      - name: Build
+        run: npm run build
+    
