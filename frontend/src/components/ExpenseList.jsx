@@ -1,4 +1,3 @@
-import {useState} from 'react'
 import ExpenseItem from './ExpenseItem'
 
 function ExpenseList(props){
