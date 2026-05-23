@@ -24,8 +24,8 @@ jobs:
           POSTGRES_USER: postgres
           POSTGRES_PASSWORD: 8911
           POSTGRES_DB: expense_test_db
-          ports:
-            - 8911:5432
+        ports:
+          - "8911:5432"
 
     steps:
       - name: Checkout
