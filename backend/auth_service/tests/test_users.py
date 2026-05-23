@@ -4,9 +4,16 @@ from app.main import app
 from app.database.db import get_db, Base
 from sqlalchemy import create_engine
 from sqlalchemy.orm import  sessionmaker
+import os
+from dotenv import load_dotenv
 
 
-TEST_DATABASE_URL = "postgresql+psycopg2://postgres:8911@localhost:8911/expense_test_db"
+load_dotenv()
+TEST_DATABASE_URL = os.getenv(
+    "TEST_DATABASE_URL",
+    "postgresql+psycopg2://postgres:test_password@localhost:8911/test_db"
+)
+
 test_engine = create_engine(TEST_DATABASE_URL)
 TestingSessionLocal = sessionmaker(bind=test_engine)
 client = TestClient(app)
