@@ -13,16 +13,6 @@ function App() {
    const  [expenses, setExpenses] = useState([])
    const [token, setToken] = useState(localStorage.getItem("token"));
 
-   async function loadExpenses(){
-        try{
-            const data = await fetchExpenses();
-            setExpenses(data)
-
-            }catch(err){
-                  console.error("Failed to load expenses:", err.message)
-                }
-        }
-
     async function deleteExpense(expenseId){
        try{
         await removeExpense(expenseId);
@@ -69,9 +59,17 @@ function App() {
   }
 
         useEffect(() => {
-         if (token) {
-         loadExpenses();
-            }
+            if (!token) return;
+             async function loadExpenses() {
+    try {
+      const data = await fetchExpenses();
+      setExpenses(data);
+    } catch (err) {
+      console.error("Failed to load expenses:", err.message);
+    }
+  }
+
+ loadExpenses();
  }, [token]);
 // If NOT logged in → show login page ONLY
      if (!token) {
