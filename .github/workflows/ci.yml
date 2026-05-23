@@ -11,6 +11,7 @@ jobs:
     name: Test ${{ matrix.service }}
     runs-on: ubuntu-latest
     strategy:
+      fail-fast: false
       matrix:
         include:
           - service: auth-service
@@ -43,6 +44,8 @@ jobs:
           poetry install --no-root --no-interaction --no-ansi
       - name: Run service tests
         working-directory: ${{ matrix.working_directory }}
+        env:
+          PYTHONPATH: .
         run: |
           poetry run pytest ${{ matrix.test_path }}
   frontend-checks:
