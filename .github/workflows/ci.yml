@@ -14,9 +14,11 @@ jobs:
       matrix:
         include:
           - service: auth-service
-            test_path: backend/auth_service/tests
+            test_path: tests
+            working_directory: backend/auth_service
           - service: expense-service
-            test_path: backend/expense_service/tests
+            working_directory: backend/expense_service
+            test_path: tests
     services:
       postgres:
         image: postgres:16
@@ -40,6 +42,7 @@ jobs:
           pip install poetry
           poetry install --no-root --no-interaction --no-ansi
       - name: Run service tests
+        working-directory: ${{ matrix.working_directory }}
         run: |
           poetry run pytest ${{ matrix.test_path }}
   frontend-checks:
