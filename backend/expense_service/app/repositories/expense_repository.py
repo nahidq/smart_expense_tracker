@@ -11,7 +11,7 @@ class ExpenseRepository:
             db.commit()
             db.refresh(new_expense)
             return new_expense
-        except:
+        except Exception:
             db.rollback()
             raise
 
@@ -48,7 +48,7 @@ class ExpenseRepository:
             db.commit()
             db.refresh(expense)
             return expense
-        except:
+        except Exception:
             db.rollback()
             raise
 
@@ -65,6 +65,6 @@ class ExpenseRepository:
             db.delete(expense)
             db.commit()
             return True
-        except:
+        except Exception:
             db.rollback()
             raise

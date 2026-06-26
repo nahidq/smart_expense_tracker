@@ -29,7 +29,6 @@ class UserService:
         existing_user = UserRepository.get_user_by_email(db, user.email)
         if existing_user:
             raise UserAlreadyExists()
-        print(f"password before hashing {user.password}")
         hashed_pw = hash_password(user.password)
 
         new_user = User(

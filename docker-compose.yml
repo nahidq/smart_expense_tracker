@@ -32,6 +32,8 @@ services:
       - "8001:8001"
     environment:
       EXPENSE_DATABASE_URL: postgresql+psycopg2://postgres:8911@expense_db:5432/expense_db
+      # Must match auth_service's SECRET_KEY so JWTs verify across services.
+      SECRET_KEY: ${SECRET_KEY:?SECRET_KEY must be set (put it in a .env file next to docker-compose.yml)}
     depends_on:
       - expense_db
 
@@ -44,6 +46,8 @@ services:
     container_name: auth_service
     environment:
       USER_DATABASE_URL: postgresql+psycopg2://postgres:8911@users_db:5432/users_db
+      # Must match expense_service's SECRET_KEY so JWTs verify across services.
+      SECRET_KEY: ${SECRET_KEY:?SECRET_KEY must be set (put it in a .env file next to docker-compose.yml)}
     depends_on:
         - users_db
 

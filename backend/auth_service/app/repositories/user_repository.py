@@ -15,7 +15,7 @@ class UserRepository:
             db.commit()
             db.refresh(new_user)
             return new_user
-        except:
+        except Exception:
             db.rollback()
             raise
 

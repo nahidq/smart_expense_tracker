@@ -14,20 +14,16 @@ from app.database.db import get_db
 load_dotenv()
 
 pwd_context = CryptContext(schemes=["bcrypt"], deprecated= "auto")
-SECRET_KEY = os.getenv("SECRET_KEY", "dev-secret-key")
+SECRET_KEY = os.getenv("SECRET_KEY")
+if not SECRET_KEY:
+    raise RuntimeError("SECRET_KEY environment variable is not set")
 ALGORITHM = os.getenv("ALGORITHM","HS256")
 ACCESS_TOKEN_EXPIRE_MINUTES =  int(os.getenv("ACCESS_TOKEN_EXPIRE_MINUTES", "30"))
 # oauth2_scheme = OAuth2PasswordBearer(tokenUrl="/auth/login")
 oauth2_scheme = OAuth2PasswordBearer(tokenUrl="/auth/token")
 
 def hash_password(password: str) -> str:
-    print("HASH_PASSWORD type:", type(password))
-    print("HASH_PASSWORD repr:", repr(password))
-    print("HASH_PASSWORD len:", len(password))
-    print("HASH_PASSWORD bytes:", len(password.encode("utf-8")))
     return pwd_context.hash(password)
-
-    # return pwd_context.hash(password)
 
 def verify_password(input_password: str, hashed_password: str) -> bool:
 
