@@ -5,7 +5,6 @@ from app.models.expense import  Expense
 from fastapi.middleware.cors import CORSMiddleware
 
 Base.metadata.create_all(engine)
-print("Tables created successfully!")
 app = FastAPI()
 app.add_middleware(
     CORSMiddleware,

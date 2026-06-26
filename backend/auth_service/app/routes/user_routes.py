@@ -15,8 +15,6 @@ router = APIRouter(prefix="/users", tags= ["Users"])
 
 @router.post("/", status_code=201, response_model= UserResponse)
 def create_user(user:UserCreate, db: Session= Depends(get_db)):
-    print("Password length:", len(user.password))
-    print("Password bytes:", len(user.password.encode("utf-8")))
     try:
         created_user = UserService.register_user(db, user)
         return created_user

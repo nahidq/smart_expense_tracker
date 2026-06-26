@@ -5,7 +5,6 @@ from fastapi.middleware.cors import CORSMiddleware
 
 
 Base.metadata.create_all(engine)
-print("Tables created successfully!")
 
 def include_routers(app: FastAPI):
     from app.routes.auth_routes import router as auth_router
