@@ -29,7 +29,7 @@ def get_user_by_email(
         db: Session= Depends(get_db)
 ):
 
-    user= UserRepository.get_user_by_email(db, email)
+    user = UserRepository.get_by_email(db, email)
     if not user:
         raise HTTPException(status_code=404, detail="User not found")
 

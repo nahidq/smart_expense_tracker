@@ -1,34 +1,22 @@
-
 from pydantic import EmailStr
 from sqlalchemy.orm import Session
 from app.models.user import User
-from app.exceptions.user_exceptions import UserNotFound
 
 
 class UserRepository:
+    """Pure data access. Transaction control (commit/rollback) lives in the
+    service layer, not here."""
 
     @staticmethod
-    def register_user(db: Session, new_user: User) -> User:
-
-        try:
-            db.add(new_user)
-            db.commit()
-            db.refresh(new_user)
-            return new_user
-        except Exception:
-            db.rollback()
-            raise
-
-    @staticmethod
-    def get_user_by_id(db: Session,user_id: int):
-        user = db.query(User).filter(User.user_id == user_id).first()
-        if not user:
-            raise UserNotFound()
-
+    def add(db: Session, user: User) -> User:
+        db.add(user)
+        db.flush()  # populates user.user_id without committing
         return user
 
     @staticmethod
-    def get_user_by_email(db: Session, email: EmailStr):
+    def get_by_id(db: Session, user_id: int) -> User | None:
+        return db.query(User).filter(User.user_id == user_id).first()
+
+    @staticmethod
+    def get_by_email(db: Session, email: EmailStr) -> User | None:
         return db.query(User).filter(User.email == email).first()
-
-

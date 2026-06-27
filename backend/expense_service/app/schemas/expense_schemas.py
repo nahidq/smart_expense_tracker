@@ -1,6 +1,17 @@
+from enum import Enum
 from pydantic import BaseModel
 from typing import Optional
 from datetime import date as dt_date, datetime
+
+
+class ExpenseCategory(str, Enum):
+    food = "Food"
+    transport = "Transport"
+    shopping = "Shopping"
+    bills = "Bills"
+    entertainment = "Entertainment"
+    health = "Health"
+    other = "Other"
 
 
 class ExpenseBase(BaseModel):
@@ -8,6 +19,7 @@ class ExpenseBase(BaseModel):
     description: Optional[str] = None
     amount: float
     date: dt_date
+    category: ExpenseCategory = ExpenseCategory.other
 
 class ExpenseCreate(ExpenseBase):
         pass
@@ -17,6 +29,7 @@ class ExpenseUpdate(BaseModel):
     description: Optional[str] = None
     amount: Optional[float] = None
     date: Optional[dt_date] = None
+    category: Optional[ExpenseCategory] = None
 
 class ExpenseResponse(ExpenseBase):
 
@@ -26,3 +39,10 @@ class ExpenseResponse(ExpenseBase):
     updated_at: datetime
 
     model_config = {"from_attributes": True}
+
+
+class ExpensePage(BaseModel):
+    items: list[ExpenseResponse]
+    total: int
+    limit: int
+    offset: int

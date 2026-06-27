@@ -1,4 +1,5 @@
 import { useState } from 'react'
+import { CATEGORIES } from '../constants'
 
 function ExpenseItem({ expense, onDeleteExpense, onUpdateExpense}) {
 
@@ -7,6 +8,7 @@ function ExpenseItem({ expense, onDeleteExpense, onUpdateExpense}) {
   const [description, setDescription] = useState(expense.description);
   const [amount, setAmount] = useState(expense.amount);
   const [date, setDate] = useState(expense.date);
+  const [category, setCategory] = useState(expense.category || "Other");
 
      function handleSave() {
        const updatedExpense = {
@@ -14,8 +16,8 @@ function ExpenseItem({ expense, onDeleteExpense, onUpdateExpense}) {
       description: description,
       amount: Number(amount),
       date: date,
+      category: category,
     };
-    console.log("updatedExpense:", updatedExpense);
 
     onUpdateExpense(updatedExpense,expense.id);
     setIsEditing(false);
@@ -48,6 +50,12 @@ if (isEditing) {
           onChange={(e) => setDate(e.target.value)}
         />
 
+        <select value={category} onChange={(e) => setCategory(e.target.value)}>
+          {CATEGORIES.map((c) => (
+            <option key={c} value={c}>{c}</option>
+          ))}
+        </select>
+
         <button onClick={handleSave}>Save</button>
         <button onClick={() => setIsEditing(false)}>Cancel</button>
       </div>
@@ -63,6 +71,7 @@ if (isEditing) {
       <p> <strong>Title:</strong>{expense.title}</p>
       <p> <strong>Description:</strong>{expense.description}</p>
       <p><strong>Amount:</strong> {expense.amount}</p>
+      <p><strong>Category:</strong> {expense.category}</p>
       <p><strong>Date:</strong> {expense.date}</p>
      <button
          onClick={() => {

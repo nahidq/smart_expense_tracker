@@ -1,7 +1,16 @@
 import { EXPENSE_BASE_URL, getToken } from "./api";
 
-export async function fetchExpenses() {
-  const response = await fetch(`${EXPENSE_BASE_URL}/expenses/`, {
+export async function fetchExpenses(params = {}) {
+  const query = new URLSearchParams();
+
+  // Only append filters the caller actually set.
+  if (params.category) query.append("category", params.category);
+  if (params.startDate) query.append("start_date", params.startDate);
+  if (params.endDate) query.append("end_date", params.endDate);
+  if (params.limit != null) query.append("limit", params.limit);
+  if (params.offset != null) query.append("offset", params.offset);
+
+  const response = await fetch(`${EXPENSE_BASE_URL}/expenses/?${query.toString()}`, {
     method: "GET",
     headers: {
       Authorization: `Bearer ${getToken()}`,
@@ -14,6 +23,7 @@ export async function fetchExpenses() {
     throw new Error(data.detail || "Failed to fetch expenses");
   }
 
+  // Backend now returns { items, total, limit, offset }
   return data;
 }
 

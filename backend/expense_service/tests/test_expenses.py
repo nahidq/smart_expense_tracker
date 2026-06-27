@@ -193,6 +193,122 @@ def test_delete_expense(setup_test_db):
     assert data["detail"] == "Expense not found"
 
 
+def test_update_expense_not_found(setup_test_db):
+    response = client.patch("/expenses/99", json={"amount": 10.0})
+    assert response.status_code == 404, response.text
+    assert response.json()["detail"] == "Expense not found"
+
+
+def test_delete_expense_not_found(setup_test_db):
+    response = client.delete("/expenses/99")
+    assert response.status_code == 404, response.text
+    assert response.json()["detail"] == "Expense not found"
+
+
+def test_create_expense_default_category(setup_test_db):
+    response = client.post(
+        "/expenses/",
+        json={"title": "Lunch", "amount": 10.0, "date": "2026-05-07"},
+    )
+    assert response.status_code == 201, response.text
+    assert response.json()["category"] == "Other"
+
+
+def test_create_expense_with_category(setup_test_db):
+    response = client.post(
+        "/expenses/",
+        json={"title": "Taxi", "amount": 12.0, "date": "2026-05-07", "category": "Transport"},
+    )
+    assert response.status_code == 201, response.text
+    assert response.json()["category"] == "Transport"
+
+
+def test_create_expense_invalid_category(setup_test_db):
+    response = client.post(
+        "/expenses/",
+        json={"title": "Lunch", "amount": 10.0, "date": "2026-05-07", "category": "Pizza"},
+    )
+    assert response.status_code == 422, response.text
+
+
+def _seed(category, date, title="x", amount=10.0):
+    r = client.post(
+        "/expenses/",
+        json={"title": title, "amount": amount, "date": date, "category": category},
+    )
+    assert r.status_code == 201, r.text
+    return r.json()
+
+
+def test_list_returns_page_wrapper(setup_test_db):
+    _seed("Food", "2026-05-01")
+    _seed("Transport", "2026-05-02")
+
+    response = client.get("/expenses/")
+    assert response.status_code == 200, response.text
+    data = response.json()
+
+    # Shape: { items, total, limit, offset }
+    assert set(data.keys()) == {"items", "total", "limit", "offset"}
+    assert data["total"] == 2
+    assert len(data["items"]) == 2
+    assert data["limit"] == 20
+    assert data["offset"] == 0
+
+
+def test_list_filter_by_category(setup_test_db):
+    _seed("Food", "2026-05-01")
+    _seed("Food", "2026-05-02")
+    _seed("Transport", "2026-05-03")
+
+    response = client.get("/expenses/", params={"category": "Food"})
+    assert response.status_code == 200, response.text
+    data = response.json()
+
+    assert data["total"] == 2
+    assert all(item["category"] == "Food" for item in data["items"])
+
+
+def test_list_filter_by_date_range(setup_test_db):
+    _seed("Food", "2026-05-01")
+    _seed("Food", "2026-05-10")
+    _seed("Food", "2026-05-20")
+
+    response = client.get(
+        "/expenses/", params={"start_date": "2026-05-05", "end_date": "2026-05-15"}
+    )
+    assert response.status_code == 200, response.text
+    data = response.json()
+
+    assert data["total"] == 1
+    assert data["items"][0]["date"] == "2026-05-10"
+
+
+def test_list_pagination(setup_test_db):
+    for i in range(1, 6):
+        _seed("Food", f"2026-05-0{i}")
+
+    # First page of 2
+    page1 = client.get("/expenses/", params={"limit": 2, "offset": 0}).json()
+    assert page1["total"] == 5
+    assert len(page1["items"]) == 2
+
+    # Second page of 2
+    page2 = client.get("/expenses/", params={"limit": 2, "offset": 2}).json()
+    assert len(page2["items"]) == 2
+
+    # Pages must not overlap
+    ids1 = {item["id"] for item in page1["items"]}
+    ids2 = {item["id"] for item in page2["items"]}
+    assert ids1.isdisjoint(ids2)
+
+
+def test_list_rejects_bad_limit(setup_test_db):
+    # limit above the le=100 bound -> 422
+    response = client.get("/expenses/", params={"limit": 9999})
+    assert response.status_code == 422, response.text
+
+
 
 
 

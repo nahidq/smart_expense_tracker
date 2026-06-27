@@ -10,8 +10,7 @@ class UserService:
 
     @staticmethod
     def authenticate_user(db: Session, email: str, password: str):
-
-        user = UserRepository.get_user_by_email(db, email)
+        user = UserRepository.get_by_email(db, email)
 
         if not user:
             raise InvalidCredentials()
@@ -23,22 +22,21 @@ class UserService:
 
     @staticmethod
     def register_user(db: Session, user: UserCreate):
-
-
-
-        existing_user = UserRepository.get_user_by_email(db, user.email)
+        existing_user = UserRepository.get_by_email(db, user.email)
         if existing_user:
             raise UserAlreadyExists()
-        hashed_pw = hash_password(user.password)
 
         new_user = User(
-            first_name = user.first_name,
-            last_name = user.last_name,
-            email= user.email,
-            hashed_password = hashed_pw
+            first_name=user.first_name,
+            last_name=user.last_name,
+            email=user.email,
+            hashed_password=hash_password(user.password),
         )
-        return UserRepository.register_user(db,new_user)
-
-
-
-
+        try:
+            UserRepository.add(db, new_user)
+            db.commit()
+            db.refresh(new_user)
+            return new_user
+        except Exception:
+            db.rollback()
+            raise

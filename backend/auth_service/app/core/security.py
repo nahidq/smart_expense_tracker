@@ -56,7 +56,7 @@ def get_current_user(
         raise credentials_exception
 
 
-    user = UserRepository.get_user_by_id(db, user_id)
+    user = UserRepository.get_by_id(db, user_id)
     if user is None:
         raise credentials_exception
 
