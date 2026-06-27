@@ -12,13 +12,15 @@ class Expense(Base):
     __tablename__ = "expenses"
     id: Mapped[int] = mapped_column(Integer, primary_key=True, index=True)
 
-    user_id: Mapped[int] = mapped_column(Integer, nullable=False)
+    user_id: Mapped[int] = mapped_column(Integer, nullable=False, index=True)
 
     title: Mapped[str] = mapped_column(String(255), nullable=False)
 
     description: Mapped[Optional[str]] = mapped_column(String(500), nullable=True)
 
     amount: Mapped[float] = mapped_column(Numeric(10, 2), nullable=False)
+
+    category: Mapped[str] = mapped_column(String(50), nullable=False, server_default="Other")
 
     date: Mapped[date] = mapped_column(Date, nullable=False)
 

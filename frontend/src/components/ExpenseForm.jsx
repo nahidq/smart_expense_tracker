@@ -1,10 +1,12 @@
 import {useState} from 'react'
+import { CATEGORIES } from '../constants'
 
 function ExpenseForm(props){
   const [title, setTitle] = useState("")
   const [amount, setAmount] = useState("")
   const [date, setDate] = useState("")
   const [description, setDescription] = useState("")
+  const [category, setCategory] = useState("Other")
   function handleSubmit(event){
       event.preventDefault()
 
@@ -16,14 +18,15 @@ function ExpenseForm(props){
       title: title,
       description: description,
       amount: Number(amount),
-      date: date
+      date: date,
+      category: category
     }
       props.onAddExpense(expense)
-      console.log(expense)
       setAmount("")
       setTitle("")
       setDescription("")
       setDate("")
+      setCategory("Other")
 
       }
 
@@ -66,18 +69,17 @@ function ExpenseForm(props){
           />
         </div>
 
-{/*         <div> */}
-{/*           <label>Category</label> */}
-{/*           <select */}
-{/*             value={Category} */}
-{/*             onChange={(event) => setCategory(event.target.value)} */}
-{/*           > */}
-{/*             <option value="">Select description</option> */}
-{/*             <option value="Food">Food</option> */}
-{/*             <option value="Transport">Transport</option> */}
-{/*             <option value="Shopping">Shopping</option> */}
-{/*           </select> */}
-{/*         </div> */}
+        <div>
+          <label>Category</label>
+          <select
+            value={category}
+            onChange={(event) => setCategory(event.target.value)}
+          >
+            {CATEGORIES.map((c) => (
+              <option key={c} value={c}>{c}</option>
+            ))}
+          </select>
+        </div>
 
           <div>
           <button type="submit">Add Expense</button>
