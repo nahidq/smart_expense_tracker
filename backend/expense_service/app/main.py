@@ -1,10 +1,9 @@
 from fastapi import FastAPI
 from app.routers.expense_routes import router as expense_router
-from app.database.db import Base, engine
-from app.models.expense import  Expense
 from fastapi.middleware.cors import CORSMiddleware
 
-Base.metadata.create_all(engine)
+# Schema is owned by Alembic migrations now (run `alembic upgrade head`),
+# so no longer call Base.metadata.create_all() is needed here.
 app = FastAPI()
 app.add_middleware(
     CORSMiddleware,
