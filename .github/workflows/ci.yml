@@ -54,8 +54,16 @@ jobs:
           poetry run pytest ${{ matrix.test_path }}
 
   migration-check:
-    name: Migrations in sync (expense-service)
+    name: Migrations in sync (${{ matrix.service }})
     runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - service: auth-service
+            working_directory: backend/auth_service
+          - service: expense-service
+            working_directory: backend/expense_service
     services:
       postgres:
         image: postgres:16
@@ -78,9 +86,12 @@ jobs:
           pip install poetry
           poetry install --no-root --no-interaction --no-ansi
       - name: Apply migrations then verify models match
-        working-directory: backend/expense_service
+        working-directory: ${{ matrix.working_directory }}
         env:
           PYTHONPATH: .
+          # Each service's alembic env.py reads whichever URL it needs; both
+          # point at the same throwaway test_db on the matrix's Postgres.
+          USER_DATABASE_URL: postgresql+psycopg2://postgres:test_password@localhost:8911/test_db
           EXPENSE_DATABASE_URL: postgresql+psycopg2://postgres:test_password@localhost:8911/test_db
           SECRET_KEY: test-secret-key
         run: |

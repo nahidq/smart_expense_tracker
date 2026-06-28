@@ -1,5 +1,6 @@
 from fastapi import FastAPI
 from app.routers.expense_routes import router as expense_router
+from app.routers.health_routes import router as health_router
 from fastapi.middleware.cors import CORSMiddleware
 
 # Schema is owned by Alembic migrations now (run `alembic upgrade head`),
@@ -16,3 +17,4 @@ app.add_middleware(
     allow_headers=["*"],
 )
 app.include_router(expense_router)
+app.include_router(health_router)
