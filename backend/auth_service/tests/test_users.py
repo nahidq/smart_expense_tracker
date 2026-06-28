@@ -16,14 +16,19 @@ TEST_DATABASE_URL = os.getenv(
 
 test_engine = create_engine(TEST_DATABASE_URL)
 TestingSessionLocal = sessionmaker(bind=test_engine)
-client = TestClient(app)
 
-# def override_get_db():
-#         session = TestingSessionLocal()
-#         try:
-#             yield session
-#         finally:
-#             session.close()
+
+def override_get_db():
+    session = TestingSessionLocal()
+    try:
+        yield session
+    finally:
+        session.close()
+
+
+# Route DB access to the test engine so tests never touch the real database.
+app.dependency_overrides[get_db] = override_get_db
+client = TestClient(app)
 
 @pytest.fixture
 def setup_test_db():
@@ -71,3 +76,15 @@ def test_login(setup_test_db):
 
     assert data["token_type"] == "bearer"
     assert "access_token" in data
+
+
+def test_health_liveness():
+    response = client.get("/health")
+    assert response.status_code == 200
+    assert response.json()["status"] == "ok"
+
+
+def test_health_readiness():
+    response = client.get("/health/ready")
+    assert response.status_code == 200
+    assert response.json()["status"] == "ready"

@@ -309,6 +309,18 @@ def test_list_rejects_bad_limit(setup_test_db):
     assert response.status_code == 422, response.text
 
 
+def test_health_liveness():
+    response = client.get("/health")
+    assert response.status_code == 200
+    assert response.json()["status"] == "ok"
+
+
+def test_health_readiness():
+    response = client.get("/health/ready")
+    assert response.status_code == 200
+    assert response.json()["status"] == "ready"
+
+
 
 
 

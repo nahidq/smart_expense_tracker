@@ -15,10 +15,12 @@ COPY pyproject.toml poetry.lock /app/
 # Install dependencies
 RUN poetry install --no-root --no-interaction --no-ansi
 
-# Copy only auth service code
+# Copy only auth service code (includes alembic/, alembic.ini, entrypoint.sh)
 COPY backend/auth_service /app
+# Normalize line endings in case the script was checked out with CRLF on Windows.
+RUN sed -i 's/\r$//' /app/entrypoint.sh
 # Expose port
 EXPOSE 8000
 
-# Run FastAPI
-CMD ["poetry", "run", "uvicorn", "app.main:app", "--host", "0.0.0.0", "--port", "8000"]
+# Migrate the database, then run FastAPI (see entrypoint.sh)
+CMD ["sh", "/app/entrypoint.sh"]
