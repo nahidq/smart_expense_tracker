@@ -52,6 +52,41 @@ jobs:
           SECRET_KEY: test-secret-key
         run: |
           poetry run pytest ${{ matrix.test_path }}
+
+  migration-check:
+    name: Migrations in sync (expense-service)
+    runs-on: ubuntu-latest
+    services:
+      postgres:
+        image: postgres:16
+        env:
+          POSTGRES_USER: postgres
+          POSTGRES_PASSWORD: test_password
+          POSTGRES_DB: test_db
+        ports:
+          - "8911:5432"
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+      - name: Setup Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+      - name: Install dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install poetry
+          poetry install --no-root --no-interaction --no-ansi
+      - name: Apply migrations then verify models match
+        working-directory: backend/expense_service
+        env:
+          PYTHONPATH: .
+          EXPENSE_DATABASE_URL: postgresql+psycopg2://postgres:test_password@localhost:8911/test_db
+          SECRET_KEY: test-secret-key
+        run: |
+          poetry run alembic upgrade head   # build schema from migrations on an empty DB
+          poetry run alembic check          # fail if models have changes not captured in a migration
+
   frontend-checks:
     runs-on: ubuntu-latest
     container:
