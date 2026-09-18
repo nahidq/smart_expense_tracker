@@ -93,6 +93,7 @@ smart_expense_tracker/
 ├── frontend/
 │   └── src/
 │
+├── .env.example
 ├── docker-compose.yml
 ├── pyproject.toml
 ├── poetry.lock
@@ -108,7 +109,29 @@ git clone https://github.com/nahidq/smart_expense_tracker.git
 cd smart_expense_tracker
 ```
 
-### 2. Run the backend with Docker Compose
+### 2. Configure environment variables
+
+No credentials are committed to this repository. Copy the template and fill in
+your own values:
+
+```bash
+cp .env.example .env
+```
+
+`.env` is git-ignored. `docker-compose.yml` reads it to configure the database
+containers and to build the connection strings the services use, so the
+credentials are defined in exactly one place.
+
+Generate a signing key for `SECRET_KEY`:
+
+```bash
+python -c "import secrets; print(secrets.token_urlsafe(32))"
+```
+
+Both services must share the same `SECRET_KEY`: the Auth Service signs JWTs and
+the Expense Service verifies them.
+
+### 3. Run the backend with Docker Compose
 
 Docker Compose starts:
 
@@ -135,7 +158,7 @@ Auth API:    http://localhost:8000/docs
 Expense API: http://localhost:8001/docs
 ```
 
-### 3. Run the frontend
+### 4. Run the frontend
 
 ```bash
 cd frontend
@@ -224,6 +247,8 @@ The backend is containerized using separate Dockerfiles for the authentication a
 * Expenses PostgreSQL database
 
 Docker Compose provides a reproducible local environment for running the backend services and databases together.
+
+Database credentials and the JWT signing key are supplied through environment variables from a git-ignored `.env` file, templated by `.env.example`. Compose fails fast with a descriptive message if a required variable is missing. The databases are published on host ports `5433` and `5434` for local tooling, and the services reach them over the Compose network by service name. Each service waits for a PostgreSQL health check before starting.
 
 ## Status
 
