@@ -36,3 +36,5 @@ build/
 
 scripts.txt
 learning.md
+# Kubernetes secrets (real values; use 01-secret.example.yaml as the template)
+k8s/01-secret.yaml
