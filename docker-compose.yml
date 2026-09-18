@@ -3,25 +3,35 @@ services:
     image: postgres:16
     container_name: expense_db
     environment:
-      POSTGRES_USER: postgres
-      POSTGRES_PASSWORD: REDACTED
-      POSTGRES_DB: expense_db
+      POSTGRES_USER: ${POSTGRES_USER:?set POSTGRES_USER in .env (see .env.example)}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:?set POSTGRES_PASSWORD in .env (see .env.example)}
+      POSTGRES_DB: ${EXPENSE_DB_NAME:-expense_db}
     ports:
-      - "8911:5432"
+      - "${EXPENSE_DB_PORT:-5433}:5432"
     volumes:
       - expense_db_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER} -d ${EXPENSE_DB_NAME:-expense_db}"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
 
   users_db:
     image: postgres:16
     container_name: users_db
     environment:
-      POSTGRES_USER: postgres
-      POSTGRES_PASSWORD: REDACTED
-      POSTGRES_DB: users_db
+      POSTGRES_USER: ${POSTGRES_USER:?set POSTGRES_USER in .env (see .env.example)}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:?set POSTGRES_PASSWORD in .env (see .env.example)}
+      POSTGRES_DB: ${USERS_DB_NAME:-users_db}
     ports:
-      - "8912:5432"
+      - "${USERS_DB_PORT:-5434}:5432"
     volumes:
       - users_db_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER} -d ${USERS_DB_NAME:-users_db}"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
 
   expense_service:
     build:
@@ -31,22 +41,31 @@ services:
     ports:
       - "8001:8001"
     environment:
-      EXPENSE_DATABASE_URL: postgresql+psycopg2://postgres:REDACTED@expense_db:5432/expense_db
+      # Built from the same variables as the database service, so the
+      # credentials live in exactly one place (.env, which is not committed).
+      EXPENSE_DATABASE_URL: postgresql+psycopg2://${POSTGRES_USER}:${POSTGRES_PASSWORD}@expense_db:5432/${EXPENSE_DB_NAME:-expense_db}
+      # Must match the auth service: the expense service verifies its JWTs.
+      SECRET_KEY: ${SECRET_KEY:?set SECRET_KEY in .env (see .env.example)}
+      ALGORITHM: ${ALGORITHM:-HS256}
     depends_on:
-      - expense_db
+      expense_db:
+        condition: service_healthy
 
   auth_service:
     build:
       context: .
       dockerfile: backend/auth_service/Dockerfile
+    container_name: auth_service
     ports:
       - "8000:8000"
-    container_name: auth_service
     environment:
-      USER_DATABASE_URL: postgresql+psycopg2://postgres:REDACTED@users_db:5432/users_db
+      USER_DATABASE_URL: postgresql+psycopg2://${POSTGRES_USER}:${POSTGRES_PASSWORD}@users_db:5432/${USERS_DB_NAME:-users_db}
+      SECRET_KEY: ${SECRET_KEY:?set SECRET_KEY in .env (see .env.example)}
+      ALGORITHM: ${ALGORITHM:-HS256}
+      ACCESS_TOKEN_EXPIRE_MINUTES: ${ACCESS_TOKEN_EXPIRE_MINUTES:-30}
     depends_on:
-        - users_db
-
+      users_db:
+        condition: service_healthy
 
 volumes:
   expense_db_data:
