@@ -37,7 +37,7 @@ def test_register_user(setup_test_db):
         json={
             "first_name": "Jasper",
             "email": "jasper@test.com",
-            "password": "89112077"
+            "password": "test-password-123"
         }
     )
 
@@ -55,7 +55,7 @@ def test_login(setup_test_db):
         json={
             "first_name": "Jasper",
             "email": "jasper@test.com",
-            "password": "89112077"
+            "password": "test-password-123"
         }
     )
 
@@ -63,7 +63,7 @@ def test_login(setup_test_db):
         "/auth/login",
         json={
             "email": "jasper@test.com",
-            "password": "89112077"
+            "password": "test-password-123"
         }
     )
     assert response.status_code == 200, response.text
